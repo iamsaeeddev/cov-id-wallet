@@ -37,7 +37,7 @@ function PassCodeContainer({ navigation }) {
                 }
 
                 else {
-                    savePassCode(firstPassCode).then(() => {
+                    savePassCode('passCode',firstPassCode).then(() => {
                         setStage(stage + 1)
                         navigation.replace('NotifyMeScreen')
                     }).catch(e => {

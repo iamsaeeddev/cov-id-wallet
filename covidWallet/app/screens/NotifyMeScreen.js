@@ -7,13 +7,37 @@ import ImageBoxComponent from '../components/ImageBoxComponent';
 import TextComponent from '../components/TextComponent';
 import {useRoute} from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
+import randomString from '../helpers/RandomString';
 
 const img = require('../assets/images/notifications.png');
 
 function NotifyMeScreen({ navigation }) {
   const [isEnabled, setIsEnabled] = useState(false);
 
-  nextHandler = () => {
+  useEffect(( )=> {
+    fetch(`http://c649c07dc9f2.ngrok.io/create_wallet`,
+			{
+				method: 'POST',
+				headers: {
+					'X-API-Key': 'secret',
+					'Content-Type': 'application/json; charset=utf-8',
+					'Server': 'Python/3.6 aiohttp/3.6.2'
+        },
+        body: JSON.stringify({
+          wallet_name: randomString(8),
+          seed: randomString(32)
+        })
+			}).then((
+				resp => resp.json().then((data => {
+          // save data in async storage
+				}))))
+  },[]);
+
+  nextHandler = (isEnabled) => {
+    if (isEnabled) {
+      setIsEnabled(isEnabled)
+    }
+ 
     navigation.navigate('MainScreen');
   }
 
@@ -31,9 +55,9 @@ function NotifyMeScreen({ navigation }) {
 
       </View>
       <View style={{ flex: 3, alignItems: 'center', justifyContent: 'center' }}>
-        <PrimaryButton text="Enable Notifications" nextHandler={nextHandler} />
+        <PrimaryButton text="Enable Notifications" nextHandler={() => nextHandler(true)} />
         <Text style={styles.TextContainerEnd}
-          onPress={nextHandler} >Continue without alerts</Text>
+          onPress={() => nextHandler(false)} >Continue without alerts</Text>
       </View>
     </View>
   );

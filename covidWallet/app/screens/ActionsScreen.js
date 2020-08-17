@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacityBase } from 'react-native';
 import FlatCard from '../components/FlatCard';
 import ImageBoxComponent from '../components/ImageBoxComponent';
@@ -7,26 +7,19 @@ import HeadingComponent from '../components/HeadingComponent';
 import { themeStyles } from '../theme/Styles';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import ModalComponent from '../components/ModalComponent';
+import { getPassCode } from '../helpers/Storage';
 
 const image = require('../assets/images/visa.jpg')
 
 function ActionsScreen(props) {
   const [isAction, setAction] = useState(true);
   const [isModalVisible, setModalVisible] = useState(false);
-  
-  const data = [
-    { name: 'First Name', value: 'John' },
-    { name: 'Last Name', value: 'Doe' },
-    { name: 'Birthday', value: '01-01-1990' },
-    { name: 'Locality', value: 'Helisinki' },
-    { name: 'Address', value: 'Khaleefa Heights, Champs Elysee' },
-    { name: 'Country Name', value: 'Finland' },
-  ];
+  const [actionsList, setActionsList] = useState([]);
 
-  const actions = [
-    { heading: 'Connection Request', text: 'Tap to view the connection request from Agha Khan Hospital Karachi' },
-    { heading: 'Vaccination Certificate', text: 'Tap to accept the immunity certificate from Agha Khan Hospital, Karachi' },
-  ]
+  useEffect(()=>{
+    getPassCode('credential').then(value=>console.log(value))
+  },[])
+
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);

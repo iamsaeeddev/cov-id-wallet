@@ -13,6 +13,7 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 
 import QRCodeScanner from 'react-native-qrcode-scanner';
+import { savePassCode } from '../helpers/Storage';
 
 class QRScreen extends React.Component {
   constructor(props) {
@@ -20,17 +21,37 @@ class QRScreen extends React.Component {
     this.state = {
       scan: true,
     }
+    this.onAccept = this.onAccept.bind(this);
+  }
+
+  onAccept = data => {
+  
   }
 
   onSuccess = e => {
-    Alert.alert(
-      'VACCIFY',
-      'QR Code Result is ' + e.data,
-      [
-        { text: 'OK', onPress: () => this.props.navigation.navigate('MainScreen') }
-      ],
-      { cancelable: false }
-    );
+    let parsedData = JSON.parse(e.data);
+    
+    if (parsedData.type === "connection_credential") {
+      savePassCode('connection_credential', e.data)
+      this.props.navigation.navigate('MainScreen')
+    }
+    else if (parsedData.type === "connection_proof") {
+      savePassCode('connection_proof', e.data)
+      this.props.navigation.navigate('MainScreen')
+    }
+    else {
+      Alert.alert('Not valid QR');
+      this.props.navigation.navigate('MainScreen')
+    }
+    // Alert.alert(
+    //   'VACCIFY',
+    //   'QR Code Result is ' + e.data,
+    //   [
+    //     { text: 'Reject', onPress: () => this.props.navigation.navigate('MainScreen') },
+    //     { text: 'Accept', onPress: () => this.onAccept(e.data)}
+    //   ],
+    //   { cancelable: false }
+    // );
     this.setState({ scan: (this.state.scan = false) })
 
   }

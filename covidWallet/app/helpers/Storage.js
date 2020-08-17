@@ -1,15 +1,15 @@
 import AsyncStorage from '@react-native-community/async-storage';
 
- export const savePassCode = async (PassCode)=> {
-          return await AsyncStorage.setItem('@passCode', PassCode)
+
+// change function names
+export const savePassCode = async (name, value) => {
+          return await AsyncStorage.setItem(name, value)
     }
 
-export const getPassCode = async () => {
+export const getPassCode = async (name) => {
         try {
-            const value = await AsyncStorage.getItem('@passCode')
-            if (value !== null) {
-
-            }
+            const value = await AsyncStorage.getItem(name)
+            return value;
         } catch (e) {
             // error reading value
         }

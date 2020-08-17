@@ -8,6 +8,7 @@ import HeadingComponent from '../components/HeadingComponent';
 import ModalComponent from '../components/ModalComponent'
 import { themeStyles } from '../theme/Styles';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import { getPassCode } from '../helpers/Storage';
 
 const card_logo = require('../assets/images/visa.jpg')
 
