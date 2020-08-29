@@ -15,26 +15,30 @@ function ActionsScreen(props) {
   const [isAction, setAction] = useState(true);
   const [isModalVisible, setModalVisible] = useState(false);
   const [actionsList, setActionsList] = useState([]);
+  const [modalData, setModalData] = useState([]);
 
-  useEffect(()=>{
-    getPassCode('credential').then(value=>console.log(value))
+  useEffect(async ()=>{
+    let actions = await getPassCode('connection_credential').then(actions => actions);
+    setActionsList(JSON.parse(actions));
   },[])
 
 
-  const toggleModal = () => {
+  const toggleModal = (v) => {
+    setModalData(v);
     setModalVisible(!isModalVisible);
   };
 
   return (
     <View style={themeStyles.mainContainer}>
+      {console.log(actionsList,'list')}
       {isAction &&
         <View>
           <HeadingComponent text="Actions" />
-          <ModalComponent data={data} isVisible={isModalVisible} toggleModal={toggleModal} />
+          <ModalComponent data={modalData} isVisible={isModalVisible} toggleModal={toggleModal} />
           {
-            actions.map((v, i) => {
-              return  <TouchableOpacity key={i} onPress={() => toggleModal()}>
-                        <FlatCard image={image} heading={v.heading} text={v.text} />
+            actionsList !== undefined && actionsList.map((v, i) => {
+              return  <TouchableOpacity key={i} onPress={() => toggleModal(v)}>
+                        <FlatCard image={image} heading={v.batch} text={v.text} />
                       </TouchableOpacity>
             })
           }

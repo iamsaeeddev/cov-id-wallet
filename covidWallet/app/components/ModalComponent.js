@@ -51,13 +51,25 @@ function ModalComponent(props) {
           <View style={styles.centerContainer}>
             <HeadingComponent text="Details" />
           </View>
+          {console.log(props.data,'Props')}
           <ScrollView>
-            {props.data && props.data.map((v, i) => {
-              return (<View key={i} style={styles.modalValuesContainer}>
-                <Text>{v.name}</Text>
-                <Text style={styles.modalValues}>{v.value}</Text>
+            {props.data!==undefined && (<View style={styles.modalValuesContainer}>
+                <Text>Name</Text>
+                <Text style={styles.modalValues}>{props.data.lastname}</Text>
+
+                <Text>Gender</Text>
+                <Text style={styles.modalValues}>{props.data.gender}</Text>
+
+                <Text>Nationality</Text>
+                <Text style={styles.modalValues}>{props.data.nationality}</Text>
+
+                <Text>Vaccinator</Text>
+                <Text style={styles.modalValues}>{props.data.vaccinator_org}</Text>
+
+                <Text>Validation Duration</Text>
+            <Text style={styles.modalValues}>{props.data.validate_from} to {props.data.validTill}</Text>
+
                 <View style={styles.horizontalRule} /></View>)
-            })
             }
             <View style={styles.centerContainer}>
               <PrimaryButton text="Accept" nextHandler={props.toggleModal} />

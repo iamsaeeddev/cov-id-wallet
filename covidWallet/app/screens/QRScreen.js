@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -13,7 +13,8 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 
 import QRCodeScanner from 'react-native-qrcode-scanner';
-import { savePassCode } from '../helpers/Storage';
+import { savePassCode, getPassCode } from '../helpers/Storage';
+import AsyncStorage from '@react-native-community/async-storage';
 
 class QRScreen extends React.Component {
   constructor(props) {
@@ -24,21 +25,41 @@ class QRScreen extends React.Component {
     this.onAccept = this.onAccept.bind(this);
   }
 
+  // componentWillMount(){
+  //   AsyncStorage.removeItem('connection_credential')
+  // }
+
   onAccept = data => {
   
   }
 
-  onSuccess = e => {
+  onSuccess = async e => {
     let parsedData = JSON.parse(e.data);
-    
-    if (parsedData.type === "connection_credential") {
-      savePassCode('connection_credential', e.data)
+    let stored_Data = await getPassCode('connection_credential').then(value=> {return value});
+    if (!stored_Data) {
+      savePassCode('connection_credential', JSON.stringify([parsedData]))
+    }
+else if (stored_Data.length) {
+    let parsedStoredData = JSON.parse(stored_Data);
+    let filtered_Data = parsedStoredData.filter(el=>el.data.invitation['@id']===parsedData.data.invitation['@id'])
+    if (filtered_Data.length>0){
+      Alert.alert('These credentials already exist')
       this.props.navigation.navigate('MainScreen')
     }
-    else if (parsedData.type === "connection_proof") {
-      savePassCode('connection_proof', e.data)
+    else {
+      let oldDataInstance = JSON.parse(stored_Data).slice()
+      console.log(oldDataInstance,'oldghjhj')
+      console.log(parsedData,'parsedData')
+      oldDataInstance.push(parsedData);
+      savePassCode('connection_credential', JSON.stringify(oldDataInstance))
+      Alert.alert('Credentials saved successfully')
       this.props.navigation.navigate('MainScreen')
     }
+  }
+    // if (parsedData.data) {
+    //   savePassCode('connection_credential')
+    //   this.props.navigation.navigate('MainScreen')
+    // }
     else {
       Alert.alert('Not valid QR');
       this.props.navigation.navigate('MainScreen')

@@ -15,7 +15,7 @@ function NotifyMeScreen({ navigation }) {
   const [isEnabled, setIsEnabled] = useState(false);
 
   useEffect(( )=> {
-    fetch(`http://c649c07dc9f2.ngrok.io/create_wallet`,
+    fetch(`http://70f01df43d79.ngrok.io/create_wallet`,
 			{
 				method: 'POST',
 				headers: {
