@@ -1,4 +1,5 @@
-import React, { useState,useEffect } from 'react';
+import * as React from 'react';
+import { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -13,122 +14,146 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 
 import QRCodeScanner from 'react-native-qrcode-scanner';
-import { savePassCode, getPassCode } from '../helpers/Storage';
-import AsyncStorage from '@react-native-community/async-storage';
+import { getItem, saveItem } from '../helpers/Storage';
+import ConstantsList from '../helpers/ConfigApp';
+function QRScreen({ navigation }) {
+  const [scan, setScan] = useState(true);
+  const [certificate_request, setCertificateRequest] = useState("");
+  const [proof_request, setProofRequest] = useState("");
+  var arr = [];
+  var arr2 = [];
 
-class QRScreen extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      scan: true,
+  useEffect(() => {
+    getItem(ConstantsList.CERT_REQ).then((data) => {
+      if (data == null) {
+        arr = [];
+      }
+      else {
+        try {
+          arr = JSON.parse(data);
+        }
+        catch (e) {
+          arr = [];
+        }
+      }
+
+      setCertificateRequest(JSON.stringify(arr));
+    }).catch(e => {
+      setError('Error');
+    })
+
+    getItem(ConstantsList.PROOF_REQ).then((data) => {
+      if (data == null) {
+        arr2 = [];
+      }
+      else {
+        try {
+          arr2 = JSON.parse(data);
+        }
+        catch (e) {
+          arr2 = [];
+        }
+      }
+      setProofRequest(JSON.stringify(arr2));
+    }).catch(e => {
+      setError('Error');
+    })
+
+  }, []);
+
+  const onSuccess = (e) => {
+    let title = "";
+    try {
+      arr = JSON.parse(certificate_request);
+      arr2 = JSON.parse(proof_request);
     }
-    this.onAccept = this.onAccept.bind(this);
-  }
-
-  // componentWillMount(){
-  //   AsyncStorage.removeItem('connection_credential')
-  // }
-
-  onAccept = data => {
-  
-  }
-
-  onSuccess = async e => {
-    let parsedData = JSON.parse(e.data);
-    let stored_Data = await getPassCode('connection_credential').then(value=> {return value});
-    if (!stored_Data) {
-      savePassCode('connection_credential', JSON.stringify([parsedData]))
+    catch{
+      arr = [];
+      arr2 = [];
     }
-else if (stored_Data.length) {
-    let parsedStoredData = JSON.parse(stored_Data);
-    let filtered_Data = parsedStoredData.filter(el=>el.data.invitation['@id']===parsedData.data.invitation['@id'])
-    if (filtered_Data.length>0){
-      Alert.alert('These credentials already exist')
-      this.props.navigation.navigate('MainScreen')
+
+    const qrJSON = JSON.parse(e.data);
+    if (qrJSON.type == "connection_credential") {
+      title = "Vaccination Certificate Request Added";
+      arr.push(qrJSON);
+      saveItem(ConstantsList.CERT_REQ, JSON.stringify(arr)).then(() => {
+      }).catch(e => {
+
+      })
+    }
+    else if (qrJSON.type == "connection_proof") {
+      title = "Vaccination Proof Request Added";
+      arr2.push(qrJSON)
+      saveItem(ConstantsList.PROOF_REQ, JSON.stringify(arr2)).then(() => {
+
+      }).catch(e => {
+
+      })
     }
     else {
-      let oldDataInstance = JSON.parse(stored_Data).slice()
-      console.log(oldDataInstance,'oldghjhj')
-      console.log(parsedData,'parsedData')
-      oldDataInstance.push(parsedData);
-      savePassCode('connection_credential', JSON.stringify(oldDataInstance))
-      Alert.alert('Credentials saved successfully')
-      this.props.navigation.navigate('MainScreen')
+      title = "Invalid QR Code";
     }
-  }
-    // if (parsedData.data) {
-    //   savePassCode('connection_credential')
-    //   this.props.navigation.navigate('MainScreen')
-    // }
-    else {
-      Alert.alert('Not valid QR');
-      this.props.navigation.navigate('MainScreen')
-    }
-    // Alert.alert(
-    //   'VACCIFY',
-    //   'QR Code Result is ' + e.data,
-    //   [
-    //     { text: 'Reject', onPress: () => this.props.navigation.navigate('MainScreen') },
-    //     { text: 'Accept', onPress: () => this.onAccept(e.data)}
-    //   ],
-    //   { cancelable: false }
-    // );
-    this.setState({ scan: (this.state.scan = false) })
+    Alert.alert(
+      'Vaccify',
+      title,
+      [
+        { text: 'OK', onPress: () => navigation.navigate('MainScreen') }
+      ],
+      { cancelable: false }
+
+    );
+    setScan(false);
+    //setScan(false);
 
   }
-
-
-  render() {
-    const { navigate } = this.props.navigation;
-
-    return (
-      <View style={styles.MainContainer}>
-        {this.state.scan &&
-          <QRCodeScanner
-            reactivate={true}
-            showMarker={true}
-            customMarker={
+  return (
+    <View style={styles.MainContainer}>
+      {scan &&
+        <QRCodeScanner
+          reactivate={true}
+          showMarker={true}
+          customMarker={
+            <View style={
+              {
+                flex: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'transparent'
+              }
+            }>
               <View style={
                 {
-                  flex: 1,
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  height: 250,
+                  width: 250,
+                  borderWidth: 2,
+                  borderColor: 'white',
                   backgroundColor: 'transparent'
                 }
-              }>
-                <View style={
-                  {
-                    height: 250,
-                    width: 250,
-                    borderWidth: 2,
-                    borderColor: 'white',
-                    backgroundColor: 'transparent'
-                  }
-                } />
-              </View>
-            }
-            ref={(node) => { this.scanner = node }}
-            onRead={this.onSuccess}
-            topContent={
-              <Text style={styles.textBold}>
-                Point your camera to a QR code to scan
+              } />
+            </View>
+          }
+          ref={(node) => { scanner = node }}
+          onRead={onSuccess}
+          topContent={
+            <Text style={styles.textBold}>
+              Point your camera to a QR code to scan
             </Text>
-            }
-            bottomContent={
-              <TouchableOpacity style={styles.buttonTouchable} onPress={() => {
-                navigate('MainScreen')
-              }}>
-                <Text style={styles.buttonText}>Cancel Scan</Text>
-              </TouchableOpacity>
-            }
+          }
+          bottomContent={
+            <TouchableOpacity style={styles.buttonTouchable} onPress={() => {
+              navigation.navigate('MainScreen')
+            }}>
+              <Text style={styles.buttonText}>Cancel Scan</Text>
+            </TouchableOpacity>
+          }
 
-          />
-        }
+        />
+      }
 
-      </View>
-    );
-  }
+    </View>
+  );
 }
+
 
 const styles = StyleSheet.create({
   sectionContainer: {

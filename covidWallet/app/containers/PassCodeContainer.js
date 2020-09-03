@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput } from 'react-native';
 import PrimaryButton from '../components/PrimaryButton';
-import { savePassCode } from '../helpers/Storage';
+import { savePassCode, isFirstTime } from '../helpers/Storage';
 import { PRIMARY_COLOR, GRAY_COLOR } from '../theme/Colors';
 import HeadingComponent from '../components/HeadingComponent';
+import AsyncStorage from '@react-native-community/async-storage';
+import ErrorComponent from '../components/ErrorComponent';
 
 
 function PassCodeContainer({ navigation }) {
@@ -14,11 +16,22 @@ function PassCodeContainer({ navigation }) {
     const [error, setError] = useState('');
     const [stage, setStage] = useState(0);
 
+    storeData = async () => {
+        try {
+            await AsyncStorage.setItem(
+                'isfirstTime',
+                'false'
+            );
+        } catch (error) {
+            // Error saving data
+        }
+    };
+
     nextHandler = () => {
         setError('')
         if (stage == 0) {
             if (firstPassCode.length == undefined || firstPassCode.length < 6) {
-                setError("please enter a valid passcode")
+                setError("Please enter a valid passcode.")
             }
             else {
                 setStage(stage + 1)
@@ -28,18 +41,19 @@ function PassCodeContainer({ navigation }) {
         }
         else if (stage == 1) {
             if (secondPassCode.length == undefined || secondPassCode.length < 6) {
-                setError("please enter a valid passcode")
+                setError("Please enter a valid passcode.")
             }
 
             else {
                 if (firstPassCode !== secondPassCode) {
-                    setError('passcodes dont match')
+                    setError('Passcode does not match')
                 }
 
                 else {
                     savePassCode('passCode',firstPassCode).then(() => {
                         setStage(stage + 1)
                         navigation.replace('NotifyMeScreen')
+                        storeData()
                     }).catch(e => {
                         setHeading('Error')
                     })
@@ -88,7 +102,7 @@ function PassCodeContainer({ navigation }) {
                     <View style={[styles.circle, secondPassCode.length >= 5 && styles.circleFill]}></View>
                     <View style={[styles.circle, secondPassCode.length >= 6 && styles.circleFill]}></View>
                 </View>}
-                {error.length > 0 ? <Text>{error}</Text> : null}
+                {error.length > 0 ? <ErrorComponent text={error} /> : null}
             </View>
             <View style={styles.buttonContainer}><PrimaryButton text={btnText} nextHandler={nextHandler} /></View>
         </View>);
@@ -140,6 +154,7 @@ const styles = StyleSheet.create({
         marginRight: 12,
         width: 25
     },
+
     buttonContainer: {
         marginTop: '15%'
     }
